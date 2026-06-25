@@ -220,7 +220,7 @@ tbody td{padding:8px 13px;font-size:12px;}
 /* ── AI Chat ── */
 #ai-fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#818cf8);border:none;cursor:pointer;box-shadow:0 4px 16px rgba(99,102,241,.4);display:flex;align-items:center;justify-content:center;font-size:22px;z-index:1000;transition:transform .2s;}
 #ai-fab:hover{transform:scale(1.08);}
-#ai-panel{position:fixed;bottom:88px;right:24px;width:360px;max-height:520px;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.16);display:none;flex-direction:column;z-index:1000;overflow:hidden;border:1px solid #e4e9f0;}
+#ai-panel{position:fixed;bottom:88px;right:24px;width:370px;max-height:540px;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.16);display:none;flex-direction:column;z-index:1000;overflow:hidden;border:1px solid #e4e9f0;}
 #ai-panel.open{display:flex;}
 #ai-header{background:linear-gradient(135deg,#6366f1,#818cf8);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;}
 #ai-header-left{display:flex;align-items:center;gap:10px;}
@@ -229,28 +229,29 @@ tbody td{padding:8px 13px;font-size:12px;}
 #ai-sub{font-size:11px;color:rgba(255,255,255,.75);}
 #ai-close{background:none;border:none;color:white;cursor:pointer;font-size:18px;padding:2px 6px;border-radius:6px;opacity:.8;}
 #ai-close:hover{opacity:1;background:rgba(255,255,255,.15);}
-#ai-key-bar{background:#fef9ee;border-bottom:1px solid #fde68a;padding:10px 14px;display:flex;align-items:center;gap:8px;}
-#ai-key-input{flex:1;font-size:11px;padding:5px 8px;border:1px solid #e4e9f0;border-radius:6px;outline:none;}
-#ai-key-save{font-size:11px;padding:5px 10px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;}
-#ai-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:180px;}
-.ai-msg{max-width:88%;padding:9px 12px;border-radius:12px;font-size:12px;line-height:1.5;}
+#ai-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:200px;}
+.ai-msg{max-width:90%;padding:9px 12px;border-radius:12px;font-size:12px;line-height:1.6;}
 .ai-msg.user{background:#eef2ff;color:#3730a3;align-self:flex-end;border-bottom-right-radius:3px;}
-.ai-msg.bot{background:#f8fafc;color:#1d2329;align-self:flex-start;border-bottom-left-radius:3px;border:1px solid #e4e9f0;}
+.ai-msg.bot{background:#f8fafc;color:#1d2329;align-self:flex-start;border-bottom-left-radius:3px;border:1px solid #e4e9f0;width:100%;}
 .ai-msg.bot b{color:#6366f1;}
+.ai-msg.bot .review-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-bottom:6px;}
+.badge-great{background:#dcfce7;color:#16a34a;}
+.badge-good{background:#fef9c3;color:#ca8a04;}
+.badge-watch{background:#fee2e2;color:#dc2626;}
 .ai-typing{display:flex;gap:4px;padding:6px 4px;}
 .ai-dot{width:7px;height:7px;border-radius:50%;background:#818cf8;animation:bounce .8s infinite;}
 .ai-dot:nth-child(2){animation-delay:.15s;}
 .ai-dot:nth-child(3){animation-delay:.3s;}
 @keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-6px);}}
+#ai-suggestions{padding:0 12px 10px;display:flex;flex-wrap:wrap;gap:5px;}
+.ai-chip{font-size:10px;padding:4px 9px;background:#eef2ff;color:#6366f1;border:none;border-radius:20px;cursor:pointer;font-weight:600;transition:background .15s;}
+.ai-chip:hover{background:#e0e7ff;}
 #ai-input-row{padding:10px 12px;border-top:1px solid #f0f2f5;display:flex;gap:8px;}
-#ai-input{flex:1;font-size:12px;padding:8px 11px;border:1px solid #e4e9f0;border-radius:8px;outline:none;resize:none;font-family:inherit;}
+#ai-input{flex:1;font-size:12px;padding:8px 11px;border:1px solid #e4e9f0;border-radius:8px;outline:none;font-family:inherit;}
 #ai-input:focus{border-color:#6366f1;}
 #ai-send{background:#6366f1;border:none;border-radius:8px;color:white;padding:8px 12px;cursor:pointer;font-size:16px;transition:background .15s;}
 #ai-send:hover{background:#4f46e5;}
 #ai-send:disabled{background:#c7d2fe;cursor:not-allowed;}
-#ai-suggestions{padding:0 12px 10px;display:flex;flex-wrap:wrap;gap:5px;}
-.ai-chip{font-size:10px;padding:4px 9px;background:#eef2ff;color:#6366f1;border:none;border-radius:20px;cursor:pointer;font-weight:600;}
-.ai-chip:hover{background:#e0e7ff;}
 
 </style>
 </head>
@@ -2053,39 +2054,33 @@ async function loadTiming(period, e){
 }
 </script>
 
-<!-- ── AI Performance Chat ── -->
-<button id="ai-fab" onclick="toggleChat()" title="AI Performance Review">💬</button>
+<!-- ── Performance Review Chat ── -->
+<button id="ai-fab" onclick="toggleChat()" title="Performance Review">💬</button>
 
 <div id="ai-panel">
   <div id="ai-header">
     <div id="ai-header-left">
-      <div id="ai-avatar">🤖</div>
+      <div id="ai-avatar">📊</div>
       <div>
-        <div id="ai-title">Performance AI</div>
-        <div id="ai-sub">Powered by Claude</div>
+        <div id="ai-title">Performance Review</div>
+        <div id="ai-sub">Live Asana data analysis</div>
       </div>
     </div>
     <button id="ai-close" onclick="toggleChat()">✕</button>
   </div>
 
-  <div id="ai-key-bar" style="display:none;">
-    <span style="font-size:11px;color:#92400e;">🔑 Enter Anthropic API key:</span>
-    <input id="ai-key-input" type="password" placeholder="sk-ant-..." />
-    <button id="ai-key-save" onclick="saveApiKey()">Save</button>
-  </div>
-
   <div id="ai-messages">
-    <div class="ai-msg bot">👋 Hi! Ask me about any team member's performance, e.g. <b>"Review Kiran Bose"</b> or <b>"How is the team doing overall?"</b></div>
+    <div class="ai-msg bot">👋 Ask me about any team member's performance or the overall team.<br><br>Try: <b>"Review [member name]"</b> or <b>"How is the team doing?"</b></div>
   </div>
 
   <div id="ai-suggestions">
-    <button class="ai-chip" onclick="quickAsk('Review team overall')">📊 Team overview</button>
+    <button class="ai-chip" onclick="quickAsk('How is the team doing overall?')">📊 Team overview</button>
     <button class="ai-chip" onclick="quickAsk('Who has the most overdue tasks?')">⚠️ Most overdue</button>
     <button class="ai-chip" onclick="quickAsk('Who is performing best?')">⭐ Top performer</button>
   </div>
 
   <div id="ai-input-row">
-    <textarea id="ai-input" rows="1" placeholder="Ask about any member…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+    <input id="ai-input" type="text" placeholder="e.g. Review [member name]…" onkeydown="if(event.key==='Enter')sendChat();" />
     <button id="ai-send" onclick="sendChat()">➤</button>
   </div>
 </div>
@@ -2093,194 +2088,156 @@ async function loadTiming(period, e){
 <script>
 
 // ══════════════════════════════════════════
-//  AI PERFORMANCE CHAT
+//  PERFORMANCE REVIEW CHAT (no API needed)
 // ══════════════════════════════════════════
 function toggleChat(){
-  const panel=document.getElementById('ai-panel');
-  panel.classList.toggle('open');
-  if(panel.classList.contains('open')){
-    checkApiKey();
-    document.getElementById('ai-input').focus();
-  }
+  const p=document.getElementById('ai-panel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) document.getElementById('ai-input').focus();
 }
 
-function checkApiKey(){
-  const key=localStorage.getItem('anthropic_key')||'';
-  document.getElementById('ai-key-bar').style.display=key?'none':'flex';
+function quickAsk(t){document.getElementById('ai-input').value=t;sendChat();}
+
+function addUserMsg(t){
+  const d=document.createElement('div');
+  d.className='ai-msg user';d.textContent=t;
+  document.getElementById('ai-messages').appendChild(d);scrollChat();
 }
 
-function saveApiKey(){
-  const val=document.getElementById('ai-key-input').value.trim();
-  if(!val.startsWith('sk-')){alert('Please enter a valid Anthropic API key starting with sk-');return;}
-  localStorage.setItem('anthropic_key',val);
-  document.getElementById('ai-key-bar').style.display='none';
-  addBotMsg('✅ API key saved! Now ask me about any team member.');
+function addBotHtml(html){
+  const d=document.createElement('div');
+  d.className='ai-msg bot';d.innerHTML=html;
+  document.getElementById('ai-messages').appendChild(d);scrollChat();
 }
 
-function quickAsk(text){
-  document.getElementById('ai-input').value=text;
-  sendChat();
-}
+function scrollChat(){const m=document.getElementById('ai-messages');m.scrollTop=m.scrollHeight;}
 
-function addUserMsg(text){
-  const div=document.createElement('div');
-  div.className='ai-msg user';
-  div.textContent=text;
-  document.getElementById('ai-messages').appendChild(div);
-  scrollChat();
-}
-
-function addBotMsg(html){
-  const div=document.createElement('div');
-  div.className='ai-msg bot';
-  div.innerHTML=html;
-  document.getElementById('ai-messages').appendChild(div);
-  scrollChat();
-}
-
-function scrollChat(){
-  const m=document.getElementById('ai-messages');
-  m.scrollTop=m.scrollHeight;
-}
-
-function showTyping(){
-  const div=document.createElement('div');
-  div.className='ai-msg bot';
-  div.id='ai-typing-indicator';
-  div.innerHTML='<div class="ai-typing"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div>';
-  document.getElementById('ai-messages').appendChild(div);
-  scrollChat();
-  return div;
-}
-
-function buildTeamContext(){
-  const tasks=window.allTasks||[];
-  const active=tasks.filter(t=>!isRecurring(t));
-  const stats=window._memberStats||{};
-  const today=todayStr();
-
-  let lines=[];
-  lines.push(`Team total open tasks: ${active.length}`);
-  lines.push(`Overdue tasks: ${active.filter(t=>t.due_on&&t.due_on<today).length}`);
-  lines.push('');
-  lines.push('Per-member breakdown:');
-
-  for(const [name,s] of Object.entries(stats)){
-    if(s.total===0)continue;
-    const memberTasks=active.filter(t=>t.assignee?.name===name);
-    const avgDays=memberTasks.length?Math.round(memberTasks.reduce((sum,t)=>{
-      const created=t.created_at?new Date(t.created_at):new Date();
-      return sum+(Date.now()-created.getTime())/(1000*60*60*24);
-    },0)/memberTasks.length):0;
-    lines.push(`- ${name}: ${s.total} open, ${s.overdue} overdue, ${s.week} due this week, avg ${avgDays} days open`);
-  }
-  return lines.join('\n');
-}
-
-function buildMemberContext(name){
+function getMemberReview(name){
   const tasks=window.allTasks||[];
   const active=tasks.filter(t=>!isRecurring(t)&&t.assignee?.name===name);
-  const stats=(window._memberStats||{})[name]||{};
-  const today=todayStr();
+  const stats=(window._memberStats||{})[name];
+  if(!stats&&active.length===0) return null;
 
-  const overdueTasks=active.filter(t=>t.due_on&&t.due_on<today);
-  const thisWeek=active.filter(t=>t.due_on&&t.due_on>=today&&t.due_on<=addDays(7));
+  const today=todayStr();
+  const s=stats||{total:0,overdue:0,today:0,week:0,noDue:0};
+
+  // Avg days open
   const avgDays=active.length?Math.round(active.reduce((sum,t)=>{
-    const created=t.created_at?new Date(t.created_at):new Date();
-    return sum+(Date.now()-created.getTime())/(1000*60*60*24);
+    const c=t.created_at?new Date(t.created_at):new Date();
+    return sum+(Date.now()-c.getTime())/(864e5);
   },0)/active.length):0;
 
-  const taskList=active.slice(0,15).map(t=>`  • ${t.name}${t.due_on?' (due '+t.due_on+')':' (no due date)'}${t.due_on&&t.due_on<today?' ⚠️ OVERDUE':''}`).join('\n');
+  // Team averages for comparison
+  const allStats=Object.values(window._memberStats||{}).filter(x=>x.total>0);
+  const teamAvgTotal=allStats.length?Math.round(allStats.reduce((s,x)=>s+x.total,0)/allStats.length):0;
+  const teamAvgOverdue=allStats.length?Math.round(allStats.reduce((s,x)=>s+x.overdue,0)/allStats.length):0;
 
-  return `Member: ${name}
-Open tasks: ${stats.total||0}
-Overdue: ${stats.overdue||0}
-Due today: ${stats.today||0}
-Due this week: ${stats.week||0}
-No due date: ${stats.noDue||0}
-Average days tasks have been open: ${avgDays}
+  // Score: lower overdue & higher completion = better
+  const overdueRate=s.total>0?s.overdue/s.total:0;
+  let badge,badgeClass;
+  if(overdueRate===0&&s.total<=teamAvgTotal){badge='Excellent';badgeClass='badge-great';}
+  else if(overdueRate<0.2&&s.total<=teamAvgTotal*1.5){badge='On Track';badgeClass='badge-good';}
+  else if(overdueRate>=0.4||s.overdue>=5){badge='Needs Attention';badgeClass='badge-watch';}
+  else{badge='Moderate Load';badgeClass='badge-good';}
 
-Current tasks:
-${taskList||'No tasks'}`;
+  // Build bullets
+  const bullets=[];
+  bullets.push(`<b>Open tasks:</b> ${s.total} (team avg: ${teamAvgTotal})`);
+  bullets.push(`<b>Overdue:</b> ${s.overdue} task${s.overdue!==1?'s':''} (team avg: ${teamAvgOverdue})`);
+  bullets.push(`<b>Due this week:</b> ${s.week}`);
+  bullets.push(`<b>Avg task age:</b> ${avgDays} days open`);
+  if(s.noDue>0) bullets.push(`<b>No due date:</b> ${s.noDue} task${s.noDue!==1?'s':''} — consider adding deadlines`);
+
+  // Insight
+  let insight='';
+  if(s.overdue===0&&s.total>0) insight='✅ No overdue tasks — great discipline on deadlines.';
+  else if(overdueRate>=0.5) insight='🔴 More than half of tasks are overdue — may need reprioritisation or support.';
+  else if(overdueRate>=0.25) insight='🟡 A quarter or more of tasks are past due — worth a check-in.';
+  else if(avgDays>20) insight='🟡 Tasks have been open a long time on average — check for blockers.';
+  else if(s.total===0) insight='ℹ️ No active tasks currently assigned.';
+  else insight='✅ Workload looks manageable with no major red flags.';
+
+  return `<span class="review-badge ${badgeClass}">${badge}</span><br>
+<b>${name}</b><br><br>
+${bullets.map(b=>`• ${b}`).join('<br>')}<br><br>
+${insight}`;
 }
 
-function findMemberInQuery(query){
+function getTeamReview(query){
+  const tasks=window.allTasks||[];
+  const active=tasks.filter(t=>!isRecurring(t));
+  const today=todayStr();
+  const overdue=active.filter(t=>t.due_on&&t.due_on<today);
+  const week=active.filter(t=>t.due_on&&t.due_on>=today&&t.due_on<=addDays(7));
+  const unassigned=active.filter(t=>!t.assignee);
+  const allStats=Object.entries(window._memberStats||{}).filter(([,s])=>s.total>0);
+
+  const q=query.toLowerCase();
+
+  if(q.includes('overdue')||q.includes('behind')){
+    const sorted=[...allStats].sort(([,a],[,b])=>b.overdue-a.overdue);
+    const lines=sorted.slice(0,5).map(([n,s])=>`• <b>${n}:</b> ${s.overdue} overdue`).join('<br>');
+    return `<b>Most Overdue Tasks</b><br><br>${lines}<br><br>Team total overdue: <b>${overdue.length}</b> tasks`;
+  }
+
+  if(q.includes('best')||q.includes('top')||q.includes('perform')){
+    const sorted=[...allStats].filter(([,s])=>s.total>0).sort(([,a],[,b])=>{
+      const ra=a.total>0?a.overdue/a.total:1;
+      const rb=b.total>0?b.overdue/b.total:1;
+      return ra-rb||a.total-b.total;
+    });
+    const lines=sorted.slice(0,5).map(([n,s],i)=>`${i===0?'🥇':i===1?'🥈':'•'} <b>${n}:</b> ${s.total} tasks, ${s.overdue} overdue`).join('<br>');
+    return `<b>Top Performers</b> (lowest overdue rate)<br><br>${lines}`;
+  }
+
+  // Default: overall summary
+  const worstOverdue=[...allStats].sort(([,a],[,b])=>b.overdue-a.overdue).slice(0,3).map(([n,s])=>`${n} (${s.overdue})`).join(', ');
+  const heaviest=[...allStats].sort(([,a],[,b])=>b.total-a.total).slice(0,3).map(([n,s])=>`${n} (${s.total})`).join(', ');
+  const overdueRate=active.length?Math.round(overdue.length/active.length*100):0;
+
+  let health,hClass;
+  if(overdueRate<10){health='Healthy';hClass='badge-great';}
+  else if(overdueRate<25){health='Monitor';hClass='badge-good';}
+  else{health='Needs Attention';hClass='badge-watch';}
+
+  return `<span class="review-badge ${hClass}">Team: ${health}</span><br><br>
+• <b>Total open tasks:</b> ${active.length}<br>
+• <b>Overdue:</b> ${overdue.length} (${overdueRate}%)<br>
+• <b>Due this week:</b> ${week.length}<br>
+• <b>Unassigned:</b> ${unassigned.length}<br>
+• <b>Active members:</b> ${allStats.length}<br><br>
+<b>Heaviest workload:</b> ${heaviest}<br>
+<b>Most overdue:</b> ${worstOverdue||'None'}`;
+}
+
+function findMember(query){
   const members=window.ALL_MEMBERS||[];
   const q=query.toLowerCase();
   return members.find(m=>q.includes(m.toLowerCase()))||
-         members.find(m=>m.toLowerCase().split(' ').some(p=>q.includes(p)&&p.length>3));
+         members.find(m=>m.toLowerCase().split(' ').some(p=>p.length>3&&q.includes(p)));
 }
 
-async function sendChat(){
+function sendChat(){
   const input=document.getElementById('ai-input');
   const query=input.value.trim();
   if(!query)return;
-
-  const key=localStorage.getItem('anthropic_key')||'';
-  if(!key){
-    document.getElementById('ai-key-bar').style.display='flex';
-    addBotMsg('⚠️ Please enter your Anthropic API key first.');
-    return;
-  }
-
   input.value='';
-  input.style.height='auto';
   document.getElementById('ai-send').disabled=true;
   addUserMsg(query);
-  const typing=showTyping();
 
-  try{
-    const member=findMemberInQuery(query);
-    let context,systemPrompt;
-
+  setTimeout(()=>{
+    const member=findMember(query);
+    let html;
     if(member){
-      context=buildMemberContext(member);
-      systemPrompt=`You are a team performance analyst for Pattern's marketplace operations team. Analyze the Asana task data provided and give a concise, professional performance review. Be factual and constructive. Use bullet points where helpful. Keep it under 150 words.`;
+      const review=getMemberReview(member);
+      html=review||`ℹ️ No task data found for <b>${member}</b>.`;
     } else {
-      context=buildTeamContext();
-      systemPrompt=`You are a team performance analyst for Pattern's marketplace operations team. Analyze the Asana task data and answer the question clearly and concisely. Use bullet points where helpful. Keep it under 200 words.`;
+      html=getTeamReview(query);
     }
-
-    const userMsg=member
-      ? `Here is the task data for ${member}:\n\n${context}\n\nQuestion: ${query}`
-      : `Here is the current team task data:\n\n${context}\n\nQuestion: ${query}`;
-
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'content-type':'application/json',
-        'x-api-key':key,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:512,
-        system:systemPrompt,
-        messages:[{role:'user',content:userMsg}]
-      })
-    });
-
-    const data=await resp.json();
-    typing.remove();
-
-    if(data.error){
-      addBotMsg('⚠️ API error: '+data.error.message);
-    } else {
-      const text=data.content?.[0]?.text||'No response received.';
-      // Format: convert **bold** to <b> and newlines to <br>
-      const html=text
-        .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
-        .replace(/\n/g,'<br>');
-      addBotMsg(html);
-    }
-  } catch(err){
-    typing.remove();
-    addBotMsg('⚠️ Error: '+err.message);
-  }
-
-  document.getElementById('ai-send').disabled=false;
-  input.focus();
+    addBotHtml(html);
+    document.getElementById('ai-send').disabled=false;
+    document.getElementById('ai-input').focus();
+  },400);
 }
 
 </script>
