@@ -216,6 +216,42 @@ tbody td{padding:8px 13px;font-size:12px;}
 .task-link-icon{font-size:14px;flex-shrink:0;opacity:.5;}
 .task-link-meta{display:flex;gap:5px;margin-top:3px;flex-wrap:wrap;}
 
+
+/* ── AI Chat ── */
+#ai-fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#818cf8);border:none;cursor:pointer;box-shadow:0 4px 16px rgba(99,102,241,.4);display:flex;align-items:center;justify-content:center;font-size:22px;z-index:1000;transition:transform .2s;}
+#ai-fab:hover{transform:scale(1.08);}
+#ai-panel{position:fixed;bottom:88px;right:24px;width:360px;max-height:520px;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.16);display:none;flex-direction:column;z-index:1000;overflow:hidden;border:1px solid #e4e9f0;}
+#ai-panel.open{display:flex;}
+#ai-header{background:linear-gradient(135deg,#6366f1,#818cf8);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;}
+#ai-header-left{display:flex;align-items:center;gap:10px;}
+#ai-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:16px;}
+#ai-title{font-size:14px;font-weight:700;color:white;}
+#ai-sub{font-size:11px;color:rgba(255,255,255,.75);}
+#ai-close{background:none;border:none;color:white;cursor:pointer;font-size:18px;padding:2px 6px;border-radius:6px;opacity:.8;}
+#ai-close:hover{opacity:1;background:rgba(255,255,255,.15);}
+#ai-key-bar{background:#fef9ee;border-bottom:1px solid #fde68a;padding:10px 14px;display:flex;align-items:center;gap:8px;}
+#ai-key-input{flex:1;font-size:11px;padding:5px 8px;border:1px solid #e4e9f0;border-radius:6px;outline:none;}
+#ai-key-save{font-size:11px;padding:5px 10px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;}
+#ai-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:180px;}
+.ai-msg{max-width:88%;padding:9px 12px;border-radius:12px;font-size:12px;line-height:1.5;}
+.ai-msg.user{background:#eef2ff;color:#3730a3;align-self:flex-end;border-bottom-right-radius:3px;}
+.ai-msg.bot{background:#f8fafc;color:#1d2329;align-self:flex-start;border-bottom-left-radius:3px;border:1px solid #e4e9f0;}
+.ai-msg.bot b{color:#6366f1;}
+.ai-typing{display:flex;gap:4px;padding:6px 4px;}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:#818cf8;animation:bounce .8s infinite;}
+.ai-dot:nth-child(2){animation-delay:.15s;}
+.ai-dot:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-6px);}}
+#ai-input-row{padding:10px 12px;border-top:1px solid #f0f2f5;display:flex;gap:8px;}
+#ai-input{flex:1;font-size:12px;padding:8px 11px;border:1px solid #e4e9f0;border-radius:8px;outline:none;resize:none;font-family:inherit;}
+#ai-input:focus{border-color:#6366f1;}
+#ai-send{background:#6366f1;border:none;border-radius:8px;color:white;padding:8px 12px;cursor:pointer;font-size:16px;transition:background .15s;}
+#ai-send:hover{background:#4f46e5;}
+#ai-send:disabled{background:#c7d2fe;cursor:not-allowed;}
+#ai-suggestions{padding:0 12px 10px;display:flex;flex-wrap:wrap;gap:5px;}
+.ai-chip{font-size:10px;padding:4px 9px;background:#eef2ff;color:#6366f1;border:none;border-radius:20px;cursor:pointer;font-weight:600;}
+.ai-chip:hover{background:#e0e7ff;}
+
 </style>
 </head>
 <body>
@@ -2015,6 +2051,238 @@ async function loadTiming(period, e){
     console.error(err);
   }
 }
+</script>
+
+<!-- ── AI Performance Chat ── -->
+<button id="ai-fab" onclick="toggleChat()" title="AI Performance Review">💬</button>
+
+<div id="ai-panel">
+  <div id="ai-header">
+    <div id="ai-header-left">
+      <div id="ai-avatar">🤖</div>
+      <div>
+        <div id="ai-title">Performance AI</div>
+        <div id="ai-sub">Powered by Claude</div>
+      </div>
+    </div>
+    <button id="ai-close" onclick="toggleChat()">✕</button>
+  </div>
+
+  <div id="ai-key-bar" style="display:none;">
+    <span style="font-size:11px;color:#92400e;">🔑 Enter Anthropic API key:</span>
+    <input id="ai-key-input" type="password" placeholder="sk-ant-..." />
+    <button id="ai-key-save" onclick="saveApiKey()">Save</button>
+  </div>
+
+  <div id="ai-messages">
+    <div class="ai-msg bot">👋 Hi! Ask me about any team member's performance, e.g. <b>"Review Kiran Bose"</b> or <b>"How is the team doing overall?"</b></div>
+  </div>
+
+  <div id="ai-suggestions">
+    <button class="ai-chip" onclick="quickAsk('Review team overall')">📊 Team overview</button>
+    <button class="ai-chip" onclick="quickAsk('Who has the most overdue tasks?')">⚠️ Most overdue</button>
+    <button class="ai-chip" onclick="quickAsk('Who is performing best?')">⭐ Top performer</button>
+  </div>
+
+  <div id="ai-input-row">
+    <textarea id="ai-input" rows="1" placeholder="Ask about any member…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+    <button id="ai-send" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+
+// ══════════════════════════════════════════
+//  AI PERFORMANCE CHAT
+// ══════════════════════════════════════════
+function toggleChat(){
+  const panel=document.getElementById('ai-panel');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open')){
+    checkApiKey();
+    document.getElementById('ai-input').focus();
+  }
+}
+
+function checkApiKey(){
+  const key=localStorage.getItem('anthropic_key')||'';
+  document.getElementById('ai-key-bar').style.display=key?'none':'flex';
+}
+
+function saveApiKey(){
+  const val=document.getElementById('ai-key-input').value.trim();
+  if(!val.startsWith('sk-')){alert('Please enter a valid Anthropic API key starting with sk-');return;}
+  localStorage.setItem('anthropic_key',val);
+  document.getElementById('ai-key-bar').style.display='none';
+  addBotMsg('✅ API key saved! Now ask me about any team member.');
+}
+
+function quickAsk(text){
+  document.getElementById('ai-input').value=text;
+  sendChat();
+}
+
+function addUserMsg(text){
+  const div=document.createElement('div');
+  div.className='ai-msg user';
+  div.textContent=text;
+  document.getElementById('ai-messages').appendChild(div);
+  scrollChat();
+}
+
+function addBotMsg(html){
+  const div=document.createElement('div');
+  div.className='ai-msg bot';
+  div.innerHTML=html;
+  document.getElementById('ai-messages').appendChild(div);
+  scrollChat();
+}
+
+function scrollChat(){
+  const m=document.getElementById('ai-messages');
+  m.scrollTop=m.scrollHeight;
+}
+
+function showTyping(){
+  const div=document.createElement('div');
+  div.className='ai-msg bot';
+  div.id='ai-typing-indicator';
+  div.innerHTML='<div class="ai-typing"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div>';
+  document.getElementById('ai-messages').appendChild(div);
+  scrollChat();
+  return div;
+}
+
+function buildTeamContext(){
+  const tasks=window.allTasks||[];
+  const active=tasks.filter(t=>!isRecurring(t));
+  const stats=window._memberStats||{};
+  const today=todayStr();
+
+  let lines=[];
+  lines.push(`Team total open tasks: ${active.length}`);
+  lines.push(`Overdue tasks: ${active.filter(t=>t.due_on&&t.due_on<today).length}`);
+  lines.push('');
+  lines.push('Per-member breakdown:');
+
+  for(const [name,s] of Object.entries(stats)){
+    if(s.total===0)continue;
+    const memberTasks=active.filter(t=>t.assignee?.name===name);
+    const avgDays=memberTasks.length?Math.round(memberTasks.reduce((sum,t)=>{
+      const created=t.created_at?new Date(t.created_at):new Date();
+      return sum+(Date.now()-created.getTime())/(1000*60*60*24);
+    },0)/memberTasks.length):0;
+    lines.push(`- ${name}: ${s.total} open, ${s.overdue} overdue, ${s.week} due this week, avg ${avgDays} days open`);
+  }
+  return lines.join('\n');
+}
+
+function buildMemberContext(name){
+  const tasks=window.allTasks||[];
+  const active=tasks.filter(t=>!isRecurring(t)&&t.assignee?.name===name);
+  const stats=(window._memberStats||{})[name]||{};
+  const today=todayStr();
+
+  const overdueTasks=active.filter(t=>t.due_on&&t.due_on<today);
+  const thisWeek=active.filter(t=>t.due_on&&t.due_on>=today&&t.due_on<=addDays(7));
+  const avgDays=active.length?Math.round(active.reduce((sum,t)=>{
+    const created=t.created_at?new Date(t.created_at):new Date();
+    return sum+(Date.now()-created.getTime())/(1000*60*60*24);
+  },0)/active.length):0;
+
+  const taskList=active.slice(0,15).map(t=>`  • ${t.name}${t.due_on?' (due '+t.due_on+')':' (no due date)'}${t.due_on&&t.due_on<today?' ⚠️ OVERDUE':''}`).join('\n');
+
+  return `Member: ${name}
+Open tasks: ${stats.total||0}
+Overdue: ${stats.overdue||0}
+Due today: ${stats.today||0}
+Due this week: ${stats.week||0}
+No due date: ${stats.noDue||0}
+Average days tasks have been open: ${avgDays}
+
+Current tasks:
+${taskList||'No tasks'}`;
+}
+
+function findMemberInQuery(query){
+  const members=window.ALL_MEMBERS||[];
+  const q=query.toLowerCase();
+  return members.find(m=>q.includes(m.toLowerCase()))||
+         members.find(m=>m.toLowerCase().split(' ').some(p=>q.includes(p)&&p.length>3));
+}
+
+async function sendChat(){
+  const input=document.getElementById('ai-input');
+  const query=input.value.trim();
+  if(!query)return;
+
+  const key=localStorage.getItem('anthropic_key')||'';
+  if(!key){
+    document.getElementById('ai-key-bar').style.display='flex';
+    addBotMsg('⚠️ Please enter your Anthropic API key first.');
+    return;
+  }
+
+  input.value='';
+  input.style.height='auto';
+  document.getElementById('ai-send').disabled=true;
+  addUserMsg(query);
+  const typing=showTyping();
+
+  try{
+    const member=findMemberInQuery(query);
+    let context,systemPrompt;
+
+    if(member){
+      context=buildMemberContext(member);
+      systemPrompt=`You are a team performance analyst for Pattern's marketplace operations team. Analyze the Asana task data provided and give a concise, professional performance review. Be factual and constructive. Use bullet points where helpful. Keep it under 150 words.`;
+    } else {
+      context=buildTeamContext();
+      systemPrompt=`You are a team performance analyst for Pattern's marketplace operations team. Analyze the Asana task data and answer the question clearly and concisely. Use bullet points where helpful. Keep it under 200 words.`;
+    }
+
+    const userMsg=member
+      ? `Here is the task data for ${member}:\n\n${context}\n\nQuestion: ${query}`
+      : `Here is the current team task data:\n\n${context}\n\nQuestion: ${query}`;
+
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'content-type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:512,
+        system:systemPrompt,
+        messages:[{role:'user',content:userMsg}]
+      })
+    });
+
+    const data=await resp.json();
+    typing.remove();
+
+    if(data.error){
+      addBotMsg('⚠️ API error: '+data.error.message);
+    } else {
+      const text=data.content?.[0]?.text||'No response received.';
+      // Format: convert **bold** to <b> and newlines to <br>
+      const html=text
+        .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
+        .replace(/\n/g,'<br>');
+      addBotMsg(html);
+    }
+  } catch(err){
+    typing.remove();
+    addBotMsg('⚠️ Error: '+err.message);
+  }
+
+  document.getElementById('ai-send').disabled=false;
+  input.focus();
+}
+
 </script>
 </body>
 </html>
