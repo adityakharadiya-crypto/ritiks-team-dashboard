@@ -1206,7 +1206,7 @@ function renderBrands(tasks){
 
 // ── Fetch all tasks ──
 async function fetchAllIncomplete(){
-  let tasks=[],offset=null,page=1,maxPages=50;
+  let tasks=[],offset=null,page=1,maxPages=200;
   while(page<=maxPages){
     const pct=Math.min(80,Math.round((page/10)*80));
     document.getElementById('loadBar').style.width=pct+'%';
