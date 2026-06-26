@@ -1677,21 +1677,19 @@ function taskUrl(task){
 }
 
 function openStatModal(type){
-  const today=new Date();today.setHours(0,0,0,0);
-  const endWeek=new Date(today);endWeek.setDate(today.getDate()+(6-today.getDay()));
-  const todayStr=today.toISOString().slice(0,10);
-  const weekStr=endWeek.toISOString().slice(0,10);
+  const todaySt=todayStr();  // UTC-based, same as stat card — fixes timezone mismatch
+  const weekSt=addDays(7);
   const active=(allTasks||[]).filter(t=>!isRecurring(t)&&!t.completed);
   let filtered,title,subtitle,color;
   if(type==='overdue'){
-    filtered=active.filter(t=>t.due_on&&t.due_on<todayStr&&t.assignee&&TEAM_SET.has(t.assignee.name));
+    filtered=active.filter(t=>t.due_on&&t.due_on<todaySt&&t.assignee&&TEAM_SET.has(t.assignee.name));
     filtered.sort((a,b)=>a.due_on<b.due_on?-1:a.due_on>b.due_on?1:0);
     title='Overdue Tasks';subtitle=filtered.length+' tasks past due date';color='#ef4444';
   }else if(type==='today'){
-    filtered=active.filter(t=>t.due_on===todayStr);
+    filtered=active.filter(t=>t.due_on===todaySt);
     title='Due Today';subtitle=filtered.length+' tasks due today';color='#f59e0b';
   }else if(type==='week'){
-    filtered=active.filter(t=>t.due_on&&t.due_on>=todayStr&&t.due_on<=weekStr);
+    filtered=active.filter(t=>t.due_on&&t.due_on>=todaySt&&t.due_on<=weekSt);
     title='Due This Week';subtitle=filtered.length+' tasks due this week';color='#10b981';
   }else if(type==='unassigned'){
     filtered=active.filter(t=>!t.assignee);
@@ -1703,7 +1701,7 @@ function openStatModal(type){
   let bodyHtml='';
   if(type==='overdue'){
     // Flat list sorted by due_on ascending (oldest = most overdue first)
-    const todayD=new Date(todayStr+'T00:00:00');
+    const todayD=new Date(todaySt+'T00:00:00');
     for(const t of filtered){
       const dueD=new Date(t.due_on+'T00:00:00');
       const daysOverdue=Math.round((todayD-dueD)/(1000*60*60*24));
@@ -1736,7 +1734,7 @@ function openStatModal(type){
       const c=avColor(name);
       bodyHtml+=`<div style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="width:26px;height:26px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;flex-shrink:0">${av}</div><span style="font-size:13px;font-weight:600">${esc(name)}</span><span style="font-size:11px;color:#6B7280;margin-left:auto">${tasks.length} task${tasks.length!==1?'s':''}</span></div>`;
       for(const t of tasks){
-        const overdue=t.due_on&&t.due_on<todayStr;
+        const overdue=t.due_on&&t.due_on<todaySt;
         const dueLabel=t.due_on?new Date(t.due_on+'T00:00:00').toLocaleDateString([],{month:'short',day:'numeric'}):'';
         bodyHtml+=`<a href="${taskUrl(t)}" target="_blank" style="display:flex;align-items:center;justify-content:space-between;padding:5px 6px;font-size:12px;color:#F9FAFB;text-decoration:none;border-bottom:1px solid #1E2A3A;border-radius:3px" onmouseover="this.style.background='#131f35'" onmouseout="this.style.background=''"><span>${esc(t.name.length>60?t.name.slice(0,60)+'…':t.name)}</span><span style="font-size:10px;color:${overdue?'#ef4444':'#6B7280'};white-space:nowrap;margin-left:8px">${dueLabel}</span></a>`;
       }
