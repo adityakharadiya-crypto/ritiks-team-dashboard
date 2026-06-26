@@ -919,9 +919,10 @@ function buildMemberStats(tasks){
 // ── Overview ──
 function renderOverview(tasks,stats){
   const t=todayStr(),w=addDays(7);
-  const overdue=tasks.filter(tk=>tk.due_on&&tk.due_on<t).length;
-  const today=tasks.filter(tk=>tk.due_on===t).length;
-  const week=tasks.filter(tk=>tk.due_on&&tk.due_on>=t&&tk.due_on<=w).length;
+  const teamTasks=tasks.filter(tk=>tk.assignee&&TEAM_SET.has(tk.assignee.name));
+  const overdue=teamTasks.filter(tk=>tk.due_on&&tk.due_on<t).length;
+  const today=teamTasks.filter(tk=>tk.due_on===t).length;
+  const week=teamTasks.filter(tk=>tk.due_on&&tk.due_on>=t&&tk.due_on<=w).length;
   const unassigned=tasks.filter(tk=>!tk.assignee||!TEAM_SET.has(tk.assignee.name)).length;
   document.getElementById('ov-total').textContent=tasks.length;
   document.getElementById('ov-overdue').textContent=overdue;
@@ -1683,7 +1684,8 @@ function openStatModal(type){
   const active=(allTasks||[]).filter(t=>!isRecurring(t)&&!t.completed);
   let filtered,title,subtitle,color;
   if(type==='overdue'){
-    filtered=active.filter(t=>t.due_on&&t.due_on<todayStr);
+    filtered=active.filter(t=>t.due_on&&t.due_on<todayStr&&t.assignee&&TEAM_SET.has(t.assignee.name));
+    filtered.sort((a,b)=>a.due_on<b.due_on?-1:a.due_on>b.due_on?1:0);
     title='Overdue Tasks';subtitle=filtered.length+' tasks past due date';color='#ef4444';
   }else if(type==='today'){
     filtered=active.filter(t=>t.due_on===todayStr);
@@ -1711,7 +1713,13 @@ function openStatModal(type){
   }else{
     const byMember={};
     for(const t of filtered){const n=(t.assignee?.name)||'Unassigned';if(!byMember[n])byMember[n]=[];byMember[n].push(t);}
-    const members=Object.entries(byMember).sort((a,b)=>b[1].length-a[1].length);
+    // For overdue: sort members by their oldest due date (most overdue member first)
+    // For others: sort by task count descending
+    const members=Object.entries(byMember).sort((a,b)=>
+      type==='overdue'
+        ? (a[1][0].due_on<b[1][0].due_on?-1:1)
+        : b[1].length-a[1].length
+    );
     for(const[name,tasks]of members){
       const av=name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
       const c=avColor(name);
