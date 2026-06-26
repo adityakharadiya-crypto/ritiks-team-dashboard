@@ -1384,7 +1384,7 @@ function renderStatusTracking(tasks){
         </div>
       </div>
       ${statusRows||'<div style="font-size:11px;color:#c0c9d4">No tasks</div>'}
-      ${stuckTotal?`<div style="margin-top:8px;font-size:10px;font-weight:700;color:#dc2626;background:#fef2f2;padding:3px 8px;border-radius:5px">🚨 ${stuckTotal} task${stuckTotal>1?'s':''} stuck >${threshold}d</div>`:''}
+      ${stuckTotal?`<div style="margin-top:8px;font-size:10px;font-weight:700;color:#dc2626;background:#1f0a0a;padding:3px 8px;border-radius:5px">🚨 ${stuckTotal} task${stuckTotal>1?'s':''} stuck >${threshold}d</div>`:''}
     </div>`;
   }).join('')||'<div style="grid-column:1/-1;padding:30px;text-align:center;color:#9ba8b8">No tasks found</div>';
 
