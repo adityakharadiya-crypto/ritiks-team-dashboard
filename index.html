@@ -363,10 +363,10 @@ tbody td{padding:8px 13px;font-size:12px;}
       <div class="sc-num" id="ov-completed">…</div>
       <div class="sc-sub">done this week ↗</div>
     </div>
-    <div class="stat-card" style="--sc:#0ea5e9" title="Total tasks on board (active + recurring)">
-      <div class="sc-label">Total on Board</div>
-      <div class="sc-num" id="ov-board-total">—</div>
-      <div class="sc-sub">all incomplete tasks</div>
+    <div class="stat-card" style="--sc:#0ea5e9" title="All tasks on board — completed + incomplete (loads in background)">
+      <div class="sc-label">All Tasks</div>
+      <div class="sc-num" id="ov-board-total">…</div>
+      <div class="sc-sub">completed + open</div>
     </div>
   </div>
 
@@ -954,8 +954,23 @@ function renderOverview(tasks,stats){
   document.getElementById('ov-today').textContent=today;
   document.getElementById('ov-week').textContent=week;
   document.getElementById('ov-unassigned').textContent=unassigned;
-  // Total on Board = all incomplete (including recurring)
-  document.getElementById('ov-board-total').textContent=(allTasks.length||tasks.length);
+  // All Tasks = completed + incomplete — fetched in background (gid only, lightweight)
+  document.getElementById('ov-board-total').textContent='…';
+  (async()=>{
+    try{
+      let total=0,bOffset=null,bPage=1;
+      while(bPage<=200){
+        const bp={project:PROJECT_ID,limit:100,opt_fields:'gid',completed_since:'1970-01-01'};
+        if(bOffset)bp.offset=bOffset;
+        const bp2=await asanaGet(bp);
+        total+=(bp2.data||[]).length;
+        const bnp=bp2.next_page;
+        if(!bnp||!bnp.offset)break;
+        bOffset=bnp.offset;bPage++;
+      }
+      document.getElementById('ov-board-total').textContent=total.toLocaleString();
+    }catch(e){document.getElementById('ov-board-total').textContent='—';}
+  })();
 
   // Overdue by member chart
   const ovMembers=ALL_MEMBERS.map(n=>({name:n,ov:stats[n]?.overdue||0})).filter(x=>x.ov>0).sort((a,b)=>b.ov-a.ov).slice(0,14);
