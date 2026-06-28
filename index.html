@@ -364,10 +364,10 @@ tbody td{padding:8px 13px;font-size:12px;}
       <div class="sc-num" id="ov-completed">…</div>
       <div class="sc-sub">done this week ↗</div>
     </div>
-    <div class="stat-card" style="--sc:#0ea5e9;position:relative" title="All tasks on board — completed + incomplete (loads in background)">
-      <div class="sc-label">All Tasks</div>
+    <div class="stat-card" id="all-tasks-card" style="--sc:#0ea5e9;position:relative" title="All tasks ever on board — completed + incomplete. This is a board-wide total and is NOT affected by the date filter above.">
+      <div class="sc-label" id="all-tasks-label">All Tasks</div>
       <div class="sc-num" id="ov-board-total">…</div>
-      <div class="sc-sub">completed + open</div>
+      <div class="sc-sub" id="all-tasks-sub">completed + open</div>
       <button onclick="event.stopPropagation();downloadCSV(window._activeTasks,'All_Active_Tasks')" style="position:absolute;bottom:7px;right:8px;background:#0ea5e922;border:1px solid #0ea5e966;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;color:#38bdf8;cursor:pointer" title="Download active (incomplete) tasks as CSV">⬇ CSV</button>
     </div>
   </div>
@@ -1305,20 +1305,22 @@ async function init(){
       }catch(e){_btEl.textContent='…';}
       (async()=>{
         try{
-          let total=0,bOffset=null,bPage=1;
+          let allBoard=[],bOffset=null,bPage=1;
           while(bPage<=200){
-            const bp={project:PROJECT_ID,limit:100,opt_fields:'gid',completed_since:'1970-01-01'};
+            const bp={project:PROJECT_ID,limit:100,opt_fields:'gid,created_at,due_on,completed',completed_since:'1970-01-01'};
             if(bOffset)bp.offset=bOffset;
             const bp2=await asanaGet(bp);
-            total+=(bp2.data||[]).length;
-            _btEl.textContent=total.toLocaleString()+'…';
+            const batch=bp2.data||[];
+            allBoard.push(...batch);
+            _btEl.textContent=allBoard.length.toLocaleString()+'…';
             const bnp=bp2.next_page;
             if(!bnp||!bnp.offset)break;
             bOffset=bnp.offset;bPage++;
           }
-          _btEl.textContent=total.toLocaleString();
+          window._allBoardTasks=allBoard;
+          _btEl.textContent=allBoard.length.toLocaleString();
           _btEl.title='All tasks: completed + incomplete';
-          localStorage.setItem(_btCacheKey,JSON.stringify({count:total,ts:Date.now()}));
+          localStorage.setItem(_btCacheKey,JSON.stringify({count:allBoard.length,ts:Date.now()}));
         }catch(e){_btEl.textContent='—';}
       })();
     }
@@ -2201,8 +2203,27 @@ function applyOverviewFilter(){
     const allMatch=filtered.length===base.length;
     document.getElementById('filter-label').textContent=
       filtered.length+' of '+base.length+' tasks match'+(allMatch?' — all tasks fall in this range, try narrowing it':'');
+    // Also filter _allBoardTasks (completed + incomplete) by the same date range
+    const allBoard=window._allBoardTasks||[];
+    if(allBoard.length){
+      const filteredAll=allBoard.filter(t=>{
+        const val=type==='created'?(t.created_at||'').slice(0,10):t.due_on;
+        if(!val)return false;
+        if(from&&val<from)return false;
+        if(to&&val>to)return false;
+        return true;
+      });
+      document.getElementById('ov-board-total').textContent=filteredAll.length.toLocaleString();
+      document.getElementById('all-tasks-sub').textContent='completed + open · filtered';
+    }else{
+      document.getElementById('all-tasks-sub').textContent='loading board total…';
+    }
   }else{
     document.getElementById('filter-label').textContent='';
+    // Restore unfiltered board total
+    const allBoard=window._allBoardTasks||[];
+    if(allBoard.length)document.getElementById('ov-board-total').textContent=allBoard.length.toLocaleString();
+    document.getElementById('all-tasks-sub').textContent='completed + open';
   }
   const stats=buildMemberStats(filtered);
   renderOverview(filtered,stats);
@@ -2212,6 +2233,10 @@ function clearOverviewFilter(){
   document.getElementById('filter-to').value='';
   document.getElementById('filter-label').textContent='';
   document.getElementById('filter-hint').textContent='';
+  const allBoard=window._allBoardTasks||[];
+  if(allBoard.length)document.getElementById('ov-board-total').textContent=allBoard.length.toLocaleString();
+  const atSub=document.getElementById('all-tasks-sub');
+  if(atSub)atSub.textContent='completed + open';
   renderOverview(window._activeTasks||[],window._memberStats||{});
 }
 </script>
