@@ -830,7 +830,8 @@ tbody td{padding:8px 13px;font-size:12px;}
         <div style="font-size:14px;font-weight:700;" id="modal-name"></div>
         <div style="font-size:11px;color:#6B7280;" id="modal-sub"></div>
       </div>
-      <button class="task-modal-close" onclick="closeModal()">✕</button>
+      <button id="modal-dl-btn" onclick="downloadCSV(window._modalTasks,window._modalTitle)" style="display:none;margin-left:auto;align-items:center;gap:5px;background:#1E2A3A;border:1px solid #2563EB;border-radius:6px;padding:5px 11px;font-size:11px;font-weight:600;color:#60A5FA;cursor:pointer;white-space:nowrap" title="Download as CSV">⬇ Download CSV</button>
+      <button class="task-modal-close" onclick="closeModal()" style="margin-left:8px">✕</button>
     </div>
     <div class="task-modal-body" id="modal-body"></div>
   </div>
@@ -954,7 +955,7 @@ function renderOverview(tasks,stats){
   document.getElementById('ov-today').textContent=today;
   document.getElementById('ov-week').textContent=week;
   document.getElementById('ov-unassigned').textContent=unassigned;
-  // All Tasks = completed + incomplete — fetched in background (gid only, lightweight)
+  // All Tasks = completed + incomplete — background fetch (gid only, up to 200 pages)
   document.getElementById('ov-board-total').textContent='…';
   (async()=>{
     try{
@@ -1738,6 +1739,23 @@ function taskUrl(task){
   return task.permalink_url || `https://app.asana.com/0/${PROJECT_ID}/${task.gid}`;
 }
 
+function downloadCSV(tasks,filename){
+  if(!tasks||!tasks.length){alert('No tasks to download.');return;}
+  const cols=['Task Name','Assignee','Due Date','Section','URL'];
+  const rows=tasks.map(t=>[
+    '"'+(t.name||'').replace(/"/g,'""')+'"',
+    '"'+(t.assignee?.name||'Unassigned').replace(/"/g,'""')+'"',
+    t.due_on||'',
+    '"'+(getSection(t)||'').replace(/"/g,'""')+'"',
+    taskUrl(t)||''
+  ].join(','));
+  const csv=[cols.join(','),...rows].join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=(filename||'tasks')+'.csv';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
 function openStatModal(type){
   const todaySt=todayStr();  // UTC-based, same as stat card — fixes timezone mismatch
   const weekSt=addDays(7);
@@ -1803,11 +1821,14 @@ function openStatModal(type){
       bodyHtml+='</div>';
     }
   }
+  window._modalTasks=filtered;
+  window._modalTitle=title;
   const icoMap={overdue:'🔴',today:'🟡',week:'🟢',unassigned:'🔵',all:'📋'};
   const av=document.getElementById('modal-av');
   av.textContent=icoMap[type]||'📋';av.style.background='transparent';av.style.fontSize='22px';
   document.getElementById('modal-name').textContent=title;
   document.getElementById('modal-sub').textContent=subtitle;
+  document.getElementById('modal-dl-btn').style.display='inline-flex';
   document.getElementById('modal-body').innerHTML=bodyHtml||'<div style="padding:30px;text-align:center;color:#6B7280">No tasks found</div>';
   const overlay=document.getElementById('taskModal');
   overlay.style.display='flex';document.body.style.overflow='hidden';
@@ -1815,6 +1836,8 @@ function openStatModal(type){
 function closeModal(){
   document.getElementById('taskModal').style.display='none';
   document.body.style.overflow='';
+  const dlBtn=document.getElementById('modal-dl-btn');
+  if(dlBtn)dlBtn.style.display='none';
 }
 function openStatusModal(memberName, memberStats){
   const m = memberStats[memberName];
