@@ -955,8 +955,19 @@ function renderOverview(tasks,stats){
   document.getElementById('ov-today').textContent=today;
   document.getElementById('ov-week').textContent=week;
   document.getElementById('ov-unassigned').textContent=unassigned;
-  // All Tasks = completed + incomplete — background fetch (gid only, up to 200 pages)
-  document.getElementById('ov-board-total').textContent='…';
+  // All Tasks = completed + incomplete — cached + progressive background fetch
+  const _btCacheKey='asana_board_total_'+PROJECT_ID;
+  const _btCacheTTL=6*60*60*1000; // 6 hours
+  const _btEl=document.getElementById('ov-board-total');
+  // Show cached count immediately if fresh
+  try{
+    const _btCached=JSON.parse(localStorage.getItem(_btCacheKey)||'null');
+    if(_btCached&&(Date.now()-_btCached.ts)<_btCacheTTL){
+      _btEl.textContent=_btCached.count.toLocaleString();
+      _btEl.title='Cached · refreshing in background';
+    }else{_btEl.textContent='…';}
+  }catch(e){_btEl.textContent='…';}
+  // Always refresh in background with progressive counter
   (async()=>{
     try{
       let total=0,bOffset=null,bPage=1;
@@ -965,12 +976,15 @@ function renderOverview(tasks,stats){
         if(bOffset)bp.offset=bOffset;
         const bp2=await asanaGet(bp);
         total+=(bp2.data||[]).length;
+        _btEl.textContent=total.toLocaleString()+'…'; // live counter
         const bnp=bp2.next_page;
         if(!bnp||!bnp.offset)break;
         bOffset=bnp.offset;bPage++;
       }
-      document.getElementById('ov-board-total').textContent=total.toLocaleString();
-    }catch(e){document.getElementById('ov-board-total').textContent='—';}
+      _btEl.textContent=total.toLocaleString();
+      _btEl.title='All tasks: completed + incomplete';
+      localStorage.setItem(_btCacheKey,JSON.stringify({count:total,ts:Date.now()}));
+    }catch(e){_btEl.textContent='—';}
   })();
 
   // Overdue by member chart
