@@ -363,10 +363,11 @@ tbody td{padding:8px 13px;font-size:12px;}
       <div class="sc-num" id="ov-completed">…</div>
       <div class="sc-sub">done this week ↗</div>
     </div>
-    <div class="stat-card" style="--sc:#0ea5e9" title="All tasks on board — completed + incomplete (loads in background)">
+    <div class="stat-card" style="--sc:#0ea5e9;position:relative" title="All tasks on board — completed + incomplete (loads in background)">
       <div class="sc-label">All Tasks</div>
       <div class="sc-num" id="ov-board-total">…</div>
       <div class="sc-sub">completed + open</div>
+      <button onclick="event.stopPropagation();downloadCSV(window._activeTasks,'All_Active_Tasks')" style="position:absolute;bottom:7px;right:8px;background:#0ea5e922;border:1px solid #0ea5e966;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;color:#38bdf8;cursor:pointer" title="Download active (incomplete) tasks as CSV">⬇ CSV</button>
     </div>
   </div>
 
