@@ -1761,10 +1761,11 @@ function taskUrl(task){
 
 function downloadCSV(tasks,filename){
   if(!tasks||!tasks.length){alert('No tasks to download.');return;}
-  const cols=['Task Name','Assignee','Due Date','Section','URL'];
+  const cols=['Task Name','Assignee','Created Date','Due Date','Section','URL'];
   const rows=tasks.map(t=>[
     '"'+(t.name||'').replace(/"/g,'""')+'"',
     '"'+(t.assignee?.name||'Unassigned').replace(/"/g,'""')+'"',
+    (t.created_at||'').slice(0,10),
     t.due_on||'',
     '"'+(getSection(t)||'').replace(/"/g,'""')+'"',
     taskUrl(t)||''
