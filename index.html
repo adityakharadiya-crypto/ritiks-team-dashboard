@@ -330,6 +330,7 @@ tbody td{padding:8px 13px;font-size:12px;}
     <button onclick="applyOverviewFilter()" style="font-size:11px;padding:4px 11px;background:#2563EB;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:700;">Apply</button>
     <button onclick="clearOverviewFilter()" style="font-size:11px;padding:4px 10px;background:#0D1117;color:#9CA3AF;border:1px solid #1E2A3A;border-radius:6px;cursor:pointer;">✕ Clear</button>
     <span id="filter-label" style="font-size:11px;color:#60A5FA;margin-left:4px;"></span>
+    <span id="filter-hint" style="font-size:10px;color:#4B5563;margin-left:6px;"></span>
   </div>
   <!-- Stats row -->
   <div class="stat-row">
@@ -2179,15 +2180,27 @@ function applyOverviewFilter(){
   const type=document.getElementById('filter-type').value;
   const base=window._activeTasks||[];
   let filtered=base;
+
+  // Compute actual data range for hint (always shown when filter type changes)
+  const allVals=base.map(t=>type==='created'?(t.created_at||'').slice(0,10):t.due_on).filter(Boolean).sort();
+  const hintEl=document.getElementById('filter-hint');
+  if(allVals.length){
+    const earliest=allVals[0];const latest=allVals[allVals.length-1];
+    const withDate=allVals.length;const noDate=base.length-withDate;
+    hintEl.textContent=`Data: ${earliest} → ${latest} (${withDate} tasks have ${type==='created'?'created':'due'} date${noDate?', '+noDate+' have none':''})`;
+  }else{hintEl.textContent='';}
+
   if(from||to){
     filtered=base.filter(t=>{
       const val=type==='created'?(t.created_at||'').slice(0,10):t.due_on;
-      if(!val)return false; // no date value → always exclude from date range filter
+      if(!val)return false;
       if(from&&val<from)return false;
       if(to&&val>to)return false;
       return true;
     });
-    document.getElementById('filter-label').textContent=filtered.length+' of '+base.length+' tasks match';
+    const allMatch=filtered.length===base.length;
+    document.getElementById('filter-label').textContent=
+      filtered.length+' of '+base.length+' tasks match'+(allMatch?' — all tasks fall in this range, try narrowing it':'');
   }else{
     document.getElementById('filter-label').textContent='';
   }
@@ -2198,6 +2211,7 @@ function clearOverviewFilter(){
   document.getElementById('filter-from').value='';
   document.getElementById('filter-to').value='';
   document.getElementById('filter-label').textContent='';
+  document.getElementById('filter-hint').textContent='';
   renderOverview(window._activeTasks||[],window._memberStats||{});
 }
 </script>
